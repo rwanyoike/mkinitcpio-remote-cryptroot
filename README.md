@@ -2,14 +2,16 @@
 
 > `systemd-networkd` + `tinysshd` + `systemd-tty-ask-password-agent`
 
-\[**Arch Linux**\] If you want to be able to boot a fully LUKS-encrypted system remotely, you will need a way to enter a passphrase for the root partition/volume at startup. This can be achieved by running a set of `mkinitcpio` hooks that configure a network interface, ssh access, and a password agent in initramfs.
+<p align="center">
+  <img src="https://www.archlinux.org/static/logos/archlinux-logo-dark-90dpi.ebdee92a15b3.png" style="max-width: 100%;" alt="SRB2Kart">
+</p>
+
+\[**Arch Linux**\] If you want to be able to [boot a fully LUKS-encrypted system remotely](https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Remote_unlocking_of_the_root_(or_other)_partition), you will need a way to enter a passphrase for the root partition/volume at startup. This can be achieved by running a set of `mkinitcpio` hooks that configure a network interface, ssh access, and a password agent in initramfs.
 
 ```
 $ ssh root@<remote host>
 🔐 Please enter passphrase for disk cryptroot: (press TAB for no echo)
 ```
-
-Context: https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Remote_unlocking_of_the_root_(or_other)_partition
 
 Works as of `systemd 245 (245.6-7-arch)`
 
@@ -37,7 +39,11 @@ See: [https://wiki.archlinux.org/index.php/Mkinitcpio#Common_hooks](https://wiki
 
 This hook allows for an encrypted root device with systemd initramfs.
 
-**Recommend:** You set the kernel parameter `rootflags=x-systemd.device-timeout=0` (Ref: [https://wiki.archlinux.org/index.php/dm-crypt/System_configuration#Timeout](https://wiki.archlinux.org/index.php/dm-crypt/System_configuration#Timeout))
+**Recommend:** That you set a root [device timeout kernel parameter](https://wiki.archlinux.org/index.php/dm-crypt/System_configuration#Timeout):
+
+```
+rootflags=x-systemd.device-timeout=0
+```
 
 ### network
 
