@@ -1,7 +1,7 @@
 pkgname=mkinitcpio-remote-cryptroot
 pkgver=0.0.1
 pkgrel=1
-pkgdesc="..."
+pkgdesc="A systemd init (systemd hook) based implementation for booting a LUKS-encrypted system remotely"
 arch=("any")
 url="https://github.com/rwanyoike/mkinitcpio-remote-cryptroot"
 license=("MIT")
