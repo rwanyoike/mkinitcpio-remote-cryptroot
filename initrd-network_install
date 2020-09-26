@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+check_systemd_hook()
+{
+    declare -F add_systemd_unit > /dev/null 2>&1
+    if [[ ! $? -eq 0 ]]; then
+        echo "systemd hook is not enabled; exit"
+        return 1
+    fi
+}
+
+check_network_file()
+{
+    ls /etc/systemd/network/*.initramfs > /dev/null 2>&1
+    if [[ $? -ne 0 ]]; then
+        echo "network hook is enabled, but there are no .initramfs files under\
+/etc/systemd/network; exit"
+        return 1
+    fi
+}
+
+add_network_user()
+{
+    cat << EOF >> "${BUILDROOT}/etc/passwd"
+systemd-network:x:1999:1999:systemd Network Management:/:/usr/bin/nologin
+EOF
+    cat << EOF >> "${BUILDROOT}/etc/group"
+systemd-network:x:1999:
+EOF
+    cat << EOF >> "${BUILDROOT}/etc/shadow"
+systemd-network:!*:18420::::::
+EOF
+}
+
+build ()
+{
+    check_systemd_hook || return 0
+    check_network_file || return 0
+    add_systemd_unit initrd-network.service
+    systemctl --root "${BUILDROOT}" enable initrd-network.service
+    add_network_user
+    mkdir -p "${BUILDROOT}/etc/systemd/network"
+    for network in /etc/systemd/network/*.initramfs; do
+        initramfs_strip=${network//\.initramfs/}
+        echo "Added ${network} to ${initramfs_strip}"
+        add_file "${network}" "${initramfs_strip}"
+    done
+}
+
+help ()
+{
+    cat << EOF
+This hook sets up the `systemd-networkd.service` systemd service and copies
+over any `*.initramfs` files in `/etc/systemd/network`.
+EOF
+}

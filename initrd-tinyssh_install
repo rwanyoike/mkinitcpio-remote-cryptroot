@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+check_systemd_hook()
+{
+    declare -F add_systemd_unit > /dev/null 2>&1
+    if [[ ! $? -eq 0 ]]; then
+        echo "systemd hook is not enabled; exit"
+        return 1
+    fi
+}
+
+check_tinyssh_root_key()
+{
+    if [[ ! -e /etc/tinyssh/root_key ]]; then
+        echo "tinyssh hook is enabled, but there are no root keys in \
+/etc/tinyssh/root_key; exit"
+        return 1
+    fi
+}
+
+build ()
+{
+    check_systemd_hook || return 0
+    check_tinyssh_root_key || return 0
+    if [[ ! -f /etc/ssh/ssh_host_ed25519_key ]]; then
+        # Ref: systemctl cat sshdgenkeys.service
+        ssh-keygen -A
+    fi
+    tinyssh-keyconvert -f /etc/ssh/ssh_host_ed25519_key
+    tinysshd-printkey /etc/tinyssh/sshkeydir
+    add_binary tinysshd
+    add_systemd_unit initrd-tinyssh.service
+    systemctl --root "${BUILDROOT}" enable initrd-tinyssh.service
+    mkdir -p "${BUILDROOT}/root/.ssh"
+    cat /etc/tinyssh/root_key > "${BUILDROOT}/root/.ssh/authorized_keys"
+    cp -r /etc/tinyssh "${BUILDROOT}/etc/tinyssh"
+}
+
+help ()
+{
+    cat << EOF
+This hook sets up the `initrd-tinyssh.service` systemd service, converts the
+openssh ed25519 host key to binary format for TinySSH, and copies over the
+authorized keys file at `/etc/tinyssh/root_key`.
+EOF
+}

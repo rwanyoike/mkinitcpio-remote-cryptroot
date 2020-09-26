@@ -1,0 +1,19 @@
+[Unit]
+Description=Initrd Network Service
+Documentation=https://github.com/rwanyoike/mkinitcpio-remote-cryptroot/blob/master/README.md
+ConditionPathExists=/etc/initrd-release
+DefaultDependencies=no
+Before=cryptsetup-pre.target
+Requires=systemd-networkd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+# Required to recover from service stops / restarts
+ExecStart=/usr/lib/initcpio/busybox sh -c "for dev in /sys/class/net/*; do ip link set $${dev##*/} up; done"
+# Required for interface renaming after switch-root
+ExecStop=/usr/lib/initcpio/busybox sh -c "for dev in /sys/class/net/*; do ip addr flush $${dev##*/}; done"
+ExecStop=/usr/lib/initcpio/busybox sh -c "for dev in /sys/class/net/*; do ip link set $${dev##*/} down; done"
+
+[Install]
+WantedBy=sysinit.target
