@@ -3,12 +3,12 @@
 > `systemd-networkd` + `tinysshd` + `systemd-tty-ask-password-agent`
 
 <p align="center">
-  <img src="https://www.archlinux.org/static/logos/archlinux-logo-dark-90dpi.ebdee92a15b3.png" style="max-width: 100%;" alt="SRB2Kart">
+  <img src="assets/logo-dark.png" style="max-width: 100%;" alt="Arch Linux">
 </p>
 
 \[**Arch Linux**\] If you want to be able to [boot a fully LUKS-encrypted system remotely](https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Remote_unlocking_of_the_root_(or_other)_partition), you will need a way to enter a passphrase for the root partition/volume at startup. This can be achieved by running a set of `mkinitcpio` hooks that configure a network interface, ssh access, and a password agent in initramfs.
 
-```
+```shell
 $ ssh root@<remote host>
 🔐 Please enter passphrase for disk cryptroot: (press TAB for no echo)
 ```
@@ -20,9 +20,7 @@ Works as of `systemd 245 (245.6-7-arch)`
 Example `/etc/mkinitcpio.conf`:
 
 ```ini
-...
 HOOKS=(base autodetect modconf block filesystems keyboard fsck systemd sd-encrypt network tinyssh password-agent)
-...
 ```
 
 ## Hooks
@@ -41,7 +39,7 @@ This hook allows for an encrypted root device with systemd initramfs.
 
 **Recommend:** That you set a root [device timeout kernel parameter](https://wiki.archlinux.org/index.php/dm-crypt/System_configuration#Timeout):
 
-```
+```shell
 rootflags=x-systemd.device-timeout=0
 ```
 
@@ -76,7 +74,3 @@ ssh-ed25519 <base64-encoded key> <comment>
 ### password-agent
 
 This hook adds the command `systemd-tty-ask-password-agent --query` to `/root/.profile` (for `sh` invocation).
-
-## License
-
-This project is licensed under the [MIT License](./LICENSE).
